@@ -29,24 +29,23 @@ RESET_FORMATTING=`tput sgr0`
 # with colorized versions of themselves.
 mvn-color() {
   # if --unbuffered isn't used, output is very choppy (refreshes every second or
-  # two). TODO: make 2-digit numbers in test output colorized correctly.
+  # two).
   mvn $@ | sed --unbuffered \
       -e "s/^\(\[INFO\] --- \)\(.*-plugin\)/\1${TEXT_BLUE}\2${RESET_FORMATTING}/" \
       -e "s/\( WARNING \)/${TEXT_YELLOW}\1${RESET_FORMATTING}/" \
       -e "s/\( SUCCESS \)/${TEXT_GREEN}\1${RESET_FORMATTING}/" \
       -e "s/\( SKIPPED\)/${TEXT_YELLOW}\1${RESET_FORMATTING}/" \
       -e "s/\( FAILURE \)/${TEXT_RED}\1${RESET_FORMATTING}/" \
-      -e "s/\(\[WARN\].*\)/${TEXT_YELLOW}\1${RESET_FORMATTING}/" \
+      -e "s/\(\[WARNING\].*\)/${TEXT_YELLOW}\1${RESET_FORMATTING}/" \
       -e "s/\(\[ERROR\]\)/${TEXT_RED}\1${RESET_FORMATTING}/" \
-      -e "s/\(Tests run: [1-9]\)/${TEXT_GREEN}\1${RESET_FORMATTING}/" \
-      -e "s/\(Failures: [1-9]\)/${TEXT_RED}\1${RESET_FORMATTING}/" \
-      -e "s/\(Errors: [1-9]\)/${TEXT_RED}\1${RESET_FORMATTING}/" \
-      -e "s/\(Skipped: [1-9]\)/${TEXT_YELLOW}\1${RESET_FORMATTING}/"
+      -e "s/\(Tests run: [1-9][0-9]*\)/${TEXT_GREEN}\1${RESET_FORMATTING}/" \
+      -e "s/\(Failures: [1-9][0-9]*\)/${TEXT_RED}\1${RESET_FORMATTING}/" \
+      -e "s/\(Errors: [1-9][0-9]*\)/${TEXT_RED}\1${RESET_FORMATTING}/" \
+      -e "s/\(Skipped: [1-9][0-9]*\)/${TEXT_YELLOW}\1${RESET_FORMATTING}/"
 
   # the 'last' command run was sed, but we can still get the return code of mvn
   # using the bulit-in bash $PIPESTATUS variable
   MVN_RETCODE=${PIPESTATUS[0]}
-  echo "maven retcode is" $MVN_RETCODE
  
   # Make sure formatting is reset
   echo -ne ${RESET_FORMATTING}
@@ -56,10 +55,10 @@ mvn-color() {
 success_icon=/usr/share/icons/gnome/32x32/emotes/face-cool.png
 failure_icon=/usr/share/icons/gnome/32x32/emotes/face-angry.png
 
-# execute our maven colorizer, and take some action based on the return code
+# execute our maven colorizer
 mvn-color "$@"
 
-# a return code of 0 indicates success. A nonzero return code indicates failure.
+# attempt a graphic popup notification to alert user of success or failure.
 if [[ $MVN_RETCODE != 0 ]]; then
     notify-send -i $failure_icon "'$(basename $0)' got fucked up"
 else
