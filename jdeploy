@@ -1,7 +1,7 @@
 #!/bin/bash 
 #
 # Creats a symlink from your $JBOSS_HOME/standalone/deployments folder to the
-# current folder (which is assumed to be the exploded WAR that you would like to
+# current folder (which must be the exploded WAR that you would like to
 # deploy). Also creates the necessary ".dodeploy" marker file in the JBoss
 # deployments folder.
 #
