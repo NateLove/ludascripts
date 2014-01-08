@@ -25,17 +25,18 @@
 # 
 #     Deploys the current exploded war to JBoss
 
-
-case "$1" in
+case $1 in
 
     jboss)
 	server="jboss"
 	DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
+	shift
     ;;
 
     tomcat)
 	#todo
 	server="tomcat"
+	shift
     ;;
 
     *)
@@ -46,7 +47,7 @@ case "$1" in
 
 esac
 
-case "$2" in 
+case $1 in 
 
     # remove everything in the server's deployment folder
     clean)
