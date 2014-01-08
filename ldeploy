@@ -7,16 +7,23 @@
 # folder to the current folder (which must be the exploded WAR that you would
 # like to deploy). Also creates the necessary ".dodeploy" marker file for JBoss.
 #
-# The exploded WAR will be created automatically by maven in the "target" folder
-# of your module. We use exploded WARs instead of compressed WARs to facilitate
-# hot-deploying resources as they are changed.
-#
 # Usage:
 # ldeploy [jboss|tomcat] [clean]
 #
-# 1. `cd` into the exploded war that you would like deployed.
-# 2. Run `ldeploy` (creates deployment symlink)
-# 3. Start Wildfly
+# Examples:
+# 
+# ldeploy jboss clean
+#
+#     Removes all deployments in your local JBoss
+#
+# ldeploy clean
+#
+#     Same as `ldeploy jboss clean`. ldeploy defaults to JBoss.
+#
+# cd <exploded_war_path>
+# ldeploy jboss
+# 
+#     Deploys the current exploded war to JBoss
 
 
 case "$1" in
@@ -32,9 +39,9 @@ case "$1" in
     ;;
 
     *)
-	echo "incorrect server specified"
-        echo "Usage: ldeploy [jboss|tomcat] [clean]"
-	exit 1
+	echo "defaulting server to JBoss"
+        server="jboss"
+	DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
     ;;
 
 esac
@@ -69,7 +76,7 @@ case "$2" in
 	
 	ln -s $full_path "$war_name.war"
 
-	if [ server == "jboss" ]; then
+	if [ $server == "jboss" ]; then
 	    touch "$war_name.war.dodeploy"
 	fi
     ;;
