@@ -1,0 +1,77 @@
+#!/bin/bash 
+#
+# Deploy a current project to a local server, or clean the deployments in a
+# local server.
+#
+# To deploy a procject, ldeploy creats a symlink from the server's deployments
+# folder to the current folder (which must be the exploded WAR that you would
+# like to deploy). Also creates the necessary ".dodeploy" marker file for JBoss.
+#
+# The exploded WAR will be created automatically by maven in the "target" folder
+# of your module. We use exploded WARs instead of compressed WARs to facilitate
+# hot-deploying resources as they are changed.
+#
+# Usage:
+# ldeploy [jboss|tomcat] [clean]
+#
+# 1. `cd` into the exploded war that you would like deployed.
+# 2. Run `ldeploy` (creates deployment symlink)
+# 3. Start Wildfly
+
+
+case "$1" in
+
+    jboss)
+	server="jboss"
+	DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
+    ;;
+
+    tomcat)
+	#todo
+	server="tomcat"
+    ;;
+
+    *)
+	echo "incorrect server specified"
+        echo "Usage: ldeploy [jboss|tomcat] [clean]"
+	exit 1
+    ;;
+
+esac
+
+case "$2" in 
+
+    # remove everything in the server's deployment folder
+    clean)
+	cd $DEPLOYMENT_FOLDER
+
+	echo "removing deployed apps in $DEPLOYMENT_FOLDER"
+	rm *\.war*
+    ;;
+
+    # deploy the current project to the server
+    *)
+	# you should be in the target directory of your project
+	two_dirs_up=$(basename $(dirname $(pwd)))
+	if [ $two_dirs_up != "target" ]; then
+	    echo "You should execute this script from the exploded WAR of your project."
+	    exit 1
+	fi
+	
+	full_path=$(pwd)
+	war_name=$(basename $(pwd))
+
+	cd $DEPLOYMENT_FOLDER
+
+	echo "creating symlink $war_name.war"
+	echo "  from $(pwd)"
+	echo "  to $full_path"
+	
+	ln -s $full_path "$war_name.war"
+
+	if [ server == "jboss" ]; then
+	    touch "$war_name.war.dodeploy"
+	fi
+    ;;
+
+esac
