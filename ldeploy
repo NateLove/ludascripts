@@ -68,7 +68,14 @@ case $1 in
 	# host-manager | examples]
 	if [ $server == "tomcat" ]; then
 	    echo "removing deployed apps in $DEPLOYMENT_FOLDER"
-	    find . -maxdepth 1 ! -name ROOT -a ! -name docs -a ! -name manager -a ! -name host-manager -a ! -name examples -a ! -name . -type d -exec rm -rf {} +
+	    find . -maxdepth 1 \
+		! -name ROOT \
+		-a ! -name docs \
+		-a ! -name manager \
+		-a ! -name host-manager \
+		-a ! -name examples \
+		-a ! -name . \
+		-type d -exec rm -rf {} +
 	fi
     ;;
 
