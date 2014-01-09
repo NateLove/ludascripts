@@ -25,28 +25,35 @@
 # 
 #     Deploys the current exploded war to JBoss
 
+
+
 case $1 in
 
     jboss)
 	server="jboss"
-	DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
 	shift
     ;;
 
     tomcat)
-	#todo
 	server="tomcat"
-	DEPLOYMENT_FOLDER=$CATALINA_HOME/webapps
 	shift
     ;;
 
     *)
 	echo "defaulting server to JBoss"
         server="jboss"
-	DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
     ;;
 
 esac
+
+# set necessary variables depending on server
+if [ $server == "jboss" ]; then
+    DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
+    war_name=$(basename $(pwd)).war
+elif [ $server == "tomcat" ]; then
+    DEPLOYMENT_FOLDER=$CATALINA_HOME/webapps
+    war_name=$(basename $(pwd))
+fi
 
 case $1 in 
 
@@ -81,17 +88,15 @@ case $1 in
 	    echo "You should execute this script from the exploded WAR of your project."
 	    exit 1
 	fi
-	
-	full_path=$(pwd)
-	war_name=$(basename $(pwd))
 
+	exploded_war_path=$(pwd)
 	cd $DEPLOYMENT_FOLDER
 
-	echo "creating symlink $war_name.war"
+	echo "creating symlink $war_name"
 	echo "  from $(pwd)"
-	echo "  to $full_path"
+	echo "  to $exploded_war_path"
 	
-	ln -s $full_path "$war_name.war"
+	ln -s $exploded_war_path "$war_name"
 
 	if [ $server == "jboss" ]; then
 	    touch "$war_name.war.dodeploy"
