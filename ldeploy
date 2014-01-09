@@ -57,25 +57,17 @@ case $1 in
 	cd $DEPLOYMENT_FOLDER
 
 	# to remove JBoss deployment, we need to remove any '.war' file
-	# (symlinks, WARs, and .war.dodeploy files)
+	# (symlinks and .war.dodeploy files)
 	if [ $server == "jboss" ]; then
 	    echo "removing deployed apps in $DEPLOYMENT_FOLDER"
 	    rm *\.war*
 	fi
 
-	# to remove Tomcat deployment, we need to remove any directories in the
-	# 'webapps' folder that aren't titeld [ROOT | docs | manager |
-	# host-manager | examples]
+	# to remove Tomcat deployment, we can remove any symlinks in the
+	# 'webapps' folder
 	if [ $server == "tomcat" ]; then
 	    echo "removing deployed apps in $DEPLOYMENT_FOLDER"
-	    find . -maxdepth 1 \
-		! -name ROOT \
-		-a ! -name docs \
-		-a ! -name manager \
-		-a ! -name host-manager \
-		-a ! -name examples \
-		-a ! -name . \
-		-type d -exec rm -rf {} +
+	    find . -maxdepth 1 -type l -exec rm -rf {} +
 	fi
     ;;
 
