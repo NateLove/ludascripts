@@ -7,25 +7,31 @@
 # folder to the current folder (which must be the exploded WAR that you would
 # like to deploy). Also creates the necessary ".dodeploy" marker file for JBoss.
 #
-# Usage:
-# ldeploy [jboss|tomcat] [clean]
+# Usage
+# -----
 #
-# Examples:
+# `ldeploy [jboss|tomcat] [clean]`
+#
+# Examples
+# --------
 # 
-# ldeploy jboss clean
+#     ldeploy jboss clean (from any directory)
 #
-#     Removes all deployments in your local JBoss
+# Removes all deployments in your local JBoss
 #
-# ldeploy clean
+#     ldeploy clean (from any directory)
 #
-#     Same as `ldeploy jboss clean`. ldeploy defaults to JBoss.
+# Same as `ldeploy jboss clean`. Defaults to JBoss.
 #
-# cd <exploded_war_path>
-# ldeploy jboss
+#     cd <exploded_war_path>
+#     ldeploy tomcat
 # 
-#     Deploys the current exploded war to JBoss
-
-
+# Deploys the current exploded war to Tomcat
+#
+#    cd <exploded_war_path>
+#    ldeploy
+#
+# Deploys the current exploded war to JBoss. Defaults to JBoss.
 
 case $1 in
 
@@ -48,14 +54,25 @@ esac
 
 # set necessary variables depending on server
 if [ $server == "jboss" ]; then
+    if [[ -z $JBOSS_HOME ]]; then
+	echo "You must set a JBOSS_HOME"
+	exit 1
+    fi
+
     DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
     war_name=$(basename $(pwd)).war
+
 elif [ $server == "tomcat" ]; then
+    if [[ -z $CATALINA_HOME ]]; then
+	echo "You must set a CATALINA_HOME"
+	exit 1
+    fi
+
     DEPLOYMENT_FOLDER=$CATALINA_HOME/webapps
     war_name=$(basename $(pwd))
 fi
 
-case $1 in 
+case $1 in
 
     # remove everything in the server's deployment folder
     clean)
