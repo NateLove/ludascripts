@@ -36,6 +36,7 @@ case $1 in
     tomcat)
 	#todo
 	server="tomcat"
+	DEPLOYMENT_FOLDER=$CATALINA_HOME/webapps
 	shift
     ;;
 
@@ -51,14 +52,30 @@ case $1 in
 
     # remove everything in the server's deployment folder
     clean)
+	echo "server is $server"
+	
 	cd $DEPLOYMENT_FOLDER
 
-	echo "removing deployed apps in $DEPLOYMENT_FOLDER"
-	rm *\.war*
+	# to remove JBoss deployment, we need to remove any '.war' file
+	# (symlinks, WARs, and .war.dodeploy files)
+	if [ $server == "jboss" ]; then
+	    echo "removing deployed apps in $DEPLOYMENT_FOLDER"
+	    rm *\.war*
+	fi
+
+	# to remove Tomcat deployment, we need to remove any directories in the
+	# 'webapps' folder that aren't titeld [ROOT | docs | manager |
+	# host-manager | examples]
+	if [ $server == "tomcat" ]; then
+	    echo "removing deployed apps in $DEPLOYMENT_FOLDER"
+	    find . -maxdepth 1 ! -name ROOT -a ! -name docs -a ! -name manager -a ! -name host-manager -a ! -name examples -a ! -name . -type d -exec rm -rf {} +
+	fi
     ;;
 
     # deploy the current project to the server
     *)
+	echo "server is $server"
+
 	# you should be in the target directory of your project
 	two_dirs_up=$(basename $(dirname $(pwd)))
 	if [ $two_dirs_up != "target" ]; then
