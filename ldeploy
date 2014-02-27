@@ -10,28 +10,24 @@
 # Usage
 # -----
 #
-# `ldeploy [jboss|tomcat] [clean]`
+#     ldeploy [jboss|tomcat] [clean]
 #
 # Examples
 # --------
 # 
-#     ldeploy jboss clean (from any directory)
+#    ldeploy jboss clean (from any directory)
 #
 # Removes all deployments in your local JBoss
 #
-#     ldeploy clean (from any directory)
-#
-# Same as `ldeploy jboss clean`. Defaults to JBoss.
-#
-#     cd <exploded_war_path>
-#     ldeploy tomcat
+#    cd <exploded_war_path>
+#    ldeploy tomcat
 # 
 # Deploys the current exploded war to Tomcat
 #
 #    cd <exploded_war_path>
-#    ldeploy
+#    ldeploy jboss
 #
-# Deploys the current exploded war to JBoss. Defaults to JBoss.
+# Deploys the current exploded war to JBoss
 
 case $1 in
 
@@ -42,12 +38,12 @@ case $1 in
 
     tomcat)
 	server="tomcat"
-	shift
+        shift
     ;;
 
     *)
-	echo "defaulting server to JBoss"
-        server="jboss"
+	echo "You must specify either jboss or tomcat"
+        exit 1
     ;;
 
 esac
@@ -59,7 +55,7 @@ if [ $server == "jboss" ]; then
 	exit 1
     fi
 
-    DEPLOYMENT_FOLDER=$JBOSS_HOME/standalone/deployments
+    DEPLOYMENTS_DIR=$JBOSS_HOME/standalone/deployments
     war_name=$(basename $(pwd)).war
 
 elif [ $server == "tomcat" ]; then
@@ -68,7 +64,7 @@ elif [ $server == "tomcat" ]; then
 	exit 1
     fi
 
-    DEPLOYMENT_FOLDER=$CATALINA_HOME/webapps
+    DEPLOYMENTS_DIR=$CATALINA_HOME/webapps
     war_name=$(basename $(pwd))
 fi
 
@@ -76,28 +72,28 @@ case $1 in
 
     # remove everything in the server's deployment folder
     clean)
-	echo "server is $server"
+	echo "cleaning deployments for $server"
 	
-	cd $DEPLOYMENT_FOLDER
+	cd $DEPLOYMENTS_DIR
 
-	# to remove JBoss deployment, we need to remove any '.war' file
-	# (symlinks and .war.dodeploy files)
+	# to remove JBoss deployment, we need to remove any '.war' files
+	# (symlinks and .war.dodeploy files) in the JBoss deployments dir
 	if [ $server == "jboss" ]; then
-	    echo "removing deployed apps in $DEPLOYMENT_FOLDER"
+	    echo "removing deployed apps in $DEPLOYMENTS_DIR"
 	    rm *\.war*
 	fi
 
-	# to remove Tomcat deployment, we can remove any symlinks in the
-	# 'webapps' folder
+	# to remove Tomcat deployments, we can remove any symlinks in the
+	# 'webapps' folder (Tomcat's bundled deployments aren't symlinks)
 	if [ $server == "tomcat" ]; then
-	    echo "removing deployed apps in $DEPLOYMENT_FOLDER"
+	    echo "removing deployed apps in $DEPLOYMENTS_DIR"
 	    find . -maxdepth 1 -type l -exec rm -rf {} +
 	fi
     ;;
 
     # deploy the current project to the server
     *)
-	echo "server is $server"
+	echo "deploying to $server"
 
 	# you should be in the target directory of your project
 	two_dirs_up=$(basename $(dirname $(pwd)))
@@ -107,14 +103,15 @@ case $1 in
 	fi
 
 	exploded_war_path=$(pwd)
-	cd $DEPLOYMENT_FOLDER
+	cd $DEPLOYMENTS_DIR
 
 	echo "creating symlink $war_name"
-	echo "  from $(pwd)"
-	echo "  to $exploded_war_path"
+	echo "  from:  $(pwd)"
+	echo "  to:    $exploded_war_path"
 	
 	ln -s $exploded_war_path "$war_name"
 
+        # JBoss needs .dodeploy file flags
 	if [ $server == "jboss" ]; then
 	    touch "$war_name.war.dodeploy"
 	fi
